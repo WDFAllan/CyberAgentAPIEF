@@ -5,12 +5,15 @@ using System.Collections.Generic;
 
 namespace CyberAgentAPI.Models
 {
-    public partial class History
+    public partial class Answer
     {
         public int HistoryId { get; set; }
         public int SurveyQuestionId { get; set; }
-        public string Answer { get; set; }
+        public string Answer1 { get; set; }
+        public DateTime Date { get; set; }
+        public int UserId { get; set; }
 
         public virtual SurveyQuestion SurveyQuestion { get; set; }
+        public virtual User User { get; set; }
     }
 }

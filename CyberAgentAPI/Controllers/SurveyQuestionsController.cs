@@ -13,9 +13,9 @@ namespace CyberAgentAPI.Controllers
     [ApiController]
     public class SurveyQuestionsController : ControllerBase
     {
-        private readonly cyberAgentContext _context;
+        private readonly CyberAgentContext _context;
 
-        public SurveyQuestionsController(cyberAgentContext context)
+        public SurveyQuestionsController(CyberAgentContext context)
         {
             _context = context;
         }
@@ -44,8 +44,10 @@ namespace CyberAgentAPI.Controllers
         [HttpGet("BySurvey/{id}")]
         public async Task<ActionResult<IEnumerable<SurveyQuestion>>> GetQuestionBySurvey(int id)
         {
+
             var surveyQuestion = _context.SurveyQuestions
                                                 .Include(q => q.Question)
+                                                .Include(q => q.Answers)
                                                 .Where(q => q.SurveyId == id).ToList();
                                                 
 

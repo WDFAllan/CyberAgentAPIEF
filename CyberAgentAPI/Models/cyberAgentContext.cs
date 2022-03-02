@@ -6,18 +6,18 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace CyberAgentAPI.Models
 {
-    public partial class cyberAgentContext : DbContext
+    public partial class CyberAgentContext : DbContext
     {
-        public cyberAgentContext()
+        public CyberAgentContext()
         {
         }
 
-        public cyberAgentContext(DbContextOptions<cyberAgentContext> options)
+        public CyberAgentContext(DbContextOptions<CyberAgentContext> options)
             : base(options)
         {
         }
 
-        public virtual DbSet<History> Histories { get; set; }
+        public virtual DbSet<Answer> Answers { get; set; }
         public virtual DbSet<Question> Questions { get; set; }
         public virtual DbSet<Survey> Surveys { get; set; }
         public virtual DbSet<SurveyQuestion> SurveyQuestions { get; set; }
@@ -27,33 +27,48 @@ namespace CyberAgentAPI.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("Name=cyberAgent");
+                optionsBuilder.UseSqlServer("name=cyberAgent");
             }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.HasAnnotation("Relational:Collation", "French_CI_AS");
+            modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
 
-            modelBuilder.Entity<History>(entity =>
+            modelBuilder.Entity<Answer>(entity =>
             {
-                entity.ToTable("history");
+                entity.HasKey(e => e.HistoryId)
+                    .HasName("PK__answers__19BDBDD375531496");
+
+                entity.ToTable("answers");
 
                 entity.Property(e => e.HistoryId).HasColumnName("historyId");
 
-                entity.Property(e => e.Answer)
+                entity.Property(e => e.Answer1)
                     .IsRequired()
                     .HasMaxLength(100)
                     .IsUnicode(false)
                     .HasColumnName("answer");
 
+                entity.Property(e => e.Date)
+                    .HasColumnType("datetime")
+                    .HasColumnName("date");
+
                 entity.Property(e => e.SurveyQuestionId).HasColumnName("surveyQuestionId");
 
+                entity.Property(e => e.UserId).HasColumnName("userId");
+
                 entity.HasOne(d => d.SurveyQuestion)
-                    .WithMany(p => p.Histories)
+                    .WithMany(p => p.Answers)
                     .HasForeignKey(d => d.SurveyQuestionId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__history__surveyQ__1E05700A");
+                    .HasConstraintName("FK__answers__surveyQ__5812160E");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.Answers)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__answers__userId__59063A47");
             });
 
             modelBuilder.Entity<Question>(entity =>
@@ -134,13 +149,13 @@ namespace CyberAgentAPI.Models
                     .WithMany(p => p.SurveyQuestions)
                     .HasForeignKey(d => d.QuestionId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__survey_qu__quest__1A34DF26");
+                    .HasConstraintName("FK__survey_qu__quest__5441852A");
 
                 entity.HasOne(d => d.Survey)
                     .WithMany(p => p.SurveyQuestions)
                     .HasForeignKey(d => d.SurveyId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__survey_qu__surve__1B29035F");
+                    .HasConstraintName("FK__survey_qu__surve__5535A963");
             });
 
             modelBuilder.Entity<User>(entity =>

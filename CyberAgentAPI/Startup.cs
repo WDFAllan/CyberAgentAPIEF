@@ -1,4 +1,6 @@
+using CyberAgentAPI.Handlers;
 using CyberAgentAPI.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -52,12 +54,21 @@ namespace CyberAgentAPI
 
             services.AddControllers();
 
+
             services.AddMvc(option => option.EnableEndpointRouting = false)
                 .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
                 .AddNewtonsoftJson(opt => opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
 
-            services.AddDbContext<cyberAgentContext>(options =>
+
+            services.AddAuthentication("BasicAuthentication")
+                    .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication",null);
+
+            services.AddDbContext<CyberAgentContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("cyberAgent")));
+
+            var jwtSection = Configuration.GetSection("JWTSettings"); 
+            services.Configure<JWTSettings>(jwtSection);
+            
 
             services.AddSwaggerGen(c =>
             {
@@ -76,6 +87,7 @@ namespace CyberAgentAPI
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "CyberAgentAPI v1"));
             }
+            
 
             app.UseCors(MyOrigins);
             app.UseCors("ClientPermission");
@@ -84,6 +96,7 @@ namespace CyberAgentAPI
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

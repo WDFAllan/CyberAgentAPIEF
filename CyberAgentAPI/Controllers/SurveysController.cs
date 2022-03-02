@@ -13,9 +13,9 @@ namespace CyberAgentAPI.Controllers
     [ApiController]
     public class SurveysController : ControllerBase
     {
-        private readonly cyberAgentContext _context;
+        private readonly CyberAgentContext _context;
 
-        public SurveysController(cyberAgentContext context)
+        public SurveysController(CyberAgentContext context)
         {
             _context = context;
         }
