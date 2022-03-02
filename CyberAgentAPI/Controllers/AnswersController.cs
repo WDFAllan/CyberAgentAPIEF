@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CyberAgentAPI.Models;
+using CyberAgentAPI.Models.dtos;
 
 namespace CyberAgentAPI.Controllers
 {
@@ -13,7 +14,9 @@ namespace CyberAgentAPI.Controllers
     [ApiController]
     public class AnswersController : ControllerBase
     {
+
         private readonly CyberAgentContext _context;
+        public static Answer answer = new Answer();
 
         public AnswersController(CyberAgentContext context)
         {
@@ -91,8 +94,14 @@ namespace CyberAgentAPI.Controllers
         // POST: api/Answers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Answer>> PostAnswer(Answer answer)
+        public async Task<ActionResult<Answer>> PostAnswer(DtoAnswer request)
         {
+
+            answer.SurveyQuestionId = request.SurveyQuestionId;
+            answer.Answer1 = request.Answer1;
+            answer.Date = DateTime.Now;
+            answer.UserId = request.UserId;
+
             _context.Answers.Add(answer);
             await _context.SaveChangesAsync();
 

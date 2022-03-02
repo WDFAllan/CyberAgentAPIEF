@@ -1,4 +1,3 @@
-using CyberAgentAPI.Handlers;
 using CyberAgentAPI.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -60,8 +59,6 @@ namespace CyberAgentAPI
                 .AddNewtonsoftJson(opt => opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
 
 
-            services.AddAuthentication("BasicAuthentication")
-                    .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication",null);
 
             services.AddDbContext<CyberAgentContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("cyberAgent")));

@@ -13,6 +13,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using CyberAgentAPI.Models.dtos;
+using Microsoft.Extensions.Configuration;
+using System.Security.Cryptography;
 
 namespace CyberAgentAPI.Controllers
 {
@@ -21,15 +23,16 @@ namespace CyberAgentAPI.Controllers
     public class UsersController : ControllerBase
     {
         private readonly CyberAgentContext _context;
-        private readonly JWTSettings _jwtsettings;
+        private readonly IConfiguration _configuration;
+        public static User user = new User();
 
-        public UsersController(CyberAgentContext context,IOptions<JWTSettings> jwtsettings)
+        public UsersController(CyberAgentContext context,IConfiguration configuration)
         {
             _context = context;
-            _jwtsettings = jwtsettings.Value;
+            _configuration = configuration; 
         }
 
-
+       
 
         // GET: api/Users
         [HttpGet]
@@ -73,70 +76,55 @@ namespace CyberAgentAPI.Controllers
             return user;
         }
 
-        //[HttpPost("Login")]
-        //public async Task<ActionResult<string>> Login(DtoUser request)
-        //{
-        //    var user = await _context.Users
-        //           .Where(user => user.Email == request.Email)
-        //           .FirstOrDefaultAsync();
+        [HttpPost("Login")]
+        public async Task<ActionResult<string>> Login(DtoUser request)
+        {
+            var user = await _context.Users
+                   .Where(user => user.Email == request.Email)
+                   .FirstOrDefaultAsync();
 
-        //    if(user == null)
-        //    {
-        //        return BadRequest("user not found");
-        //    }
+            if(user == null)
+            {
+                return BadRequest("user not found");
+            }
 
-        //    if (request.Email != user.Email)
-        //    {
-        //        return BadRequest("request null");
-        //    }
+            if (request.Email != user.Email)
+            {
+                return BadRequest("request null");
+            }
 
-        //    string token = CreateToken(user);
-        //    return Ok(token);
+            if (!VerifyPasswordHash(request.Password, user.Password,user.PasswordSalt))
+            {
+                return BadRequest("Wrong password!");
+            }
 
-        //}
 
-        //private string CreateToken(User user)
-        //{
-        //    List<Claim> claims = new List<Claim>()
-        //    {
-        //        new Claim(ClaimTypes.Name, user.Email)
-        //    };
-        //    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes());
-        //}
+            string token = CreateToken(user);
+            return Ok(token);
 
-        //// Get: api/Users
-        //[HttpPost("Login")]
-        //public async Task<ActionResult<UserWithToken>> Login([FromBody] User user)
-        //{
-        //    user = await _context.Users
-        //           .Where(u => u.Email == user.Email && u.Password==user.Password)
-        //           .FirstOrDefaultAsync();
+        }
 
-        //    UserWithToken userWithToken = new UserWithToken(user);
+        private string CreateToken(User user)
+        {
+            List<Claim> claims = new List<Claim>()
+            {
+                new Claim(ClaimTypes.Name, user.Email)
+            };
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                _configuration.GetSection("JWTSettings:Token").Value));
 
-        //    if (userWithToken == null)
-        //    {
-        //        return NotFound();
-        //    }
+            var creds = new SigningCredentials(key,SecurityAlgorithms.HmacSha256);
 
-        //    // sign your token here here..
-        //    var tokenHandler = new JwtSecurityTokenHandler();
-        //    var key = Encoding.ASCII.GetBytes(_jwtsettings.SecretKey);
-        //    var tokenDescriptor = new SecurityTokenDescriptor
-        //    {
-        //        Subject = new ClaimsIdentity(new Claim[]
-        //        {
-        //            new Claim(ClaimTypes.Name, user.Email)
-        //        }),
-        //        Expires = DateTime.UtcNow.AddMonths(6),
-        //        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
-        //        SecurityAlgorithms.HmacSha256Signature)
-        //    };
-        //    var token = tokenHandler.CreateToken(tokenDescriptor);
-        //    userWithToken.AccessToken = tokenHandler.WriteToken(token);
-            
-        //    return userWithToken;
-        //}
+            var token = new JwtSecurityToken(
+                claims : claims,
+                expires: DateTime.Now.AddMonths(3),
+                 signingCredentials : creds);
+
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return jwt;
+        }
+
 
     // PUT: api/Users/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -172,12 +160,22 @@ namespace CyberAgentAPI.Controllers
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
+        public async Task<ActionResult<User>> PostUser(DtoUser request)
         {
+
+            CreatePasswordHash(request.Password, out byte[] password, out byte[] passwordSalt);
+
+            user.Email = request.Email;
+            user.Password = password;
+            user.PasswordSalt = passwordSalt;
+            user.UserId = 0;
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetUser", new { id = user.UserId }, user);
+
+            //return Ok(user);
+
         }
 
         // DELETE: api/Users/5
@@ -200,5 +198,25 @@ namespace CyberAgentAPI.Controllers
         {
             return _context.Users.Any(e => e.UserId == id);
         }
+
+        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+        {
+            using (var hmac = new HMACSHA256())
+            {
+                passwordSalt = hmac.Key;
+                passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+            }
+
+        }
+
+        private bool VerifyPasswordHash(string password,byte[] passwordHash, byte[] passwordSalt)
+        {
+            using(var hmac = new HMACSHA256(passwordSalt))
+            {
+                var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+                return computedHash.SequenceEqual(passwordHash);
+            }
+        }
+
     }
 }

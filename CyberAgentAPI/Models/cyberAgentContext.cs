@@ -27,7 +27,7 @@ namespace CyberAgentAPI.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("name=cyberAgent");
+                optionsBuilder.UseSqlServer("Name=cyberAgent");
             }
         }
 
@@ -38,7 +38,7 @@ namespace CyberAgentAPI.Models
             modelBuilder.Entity<Answer>(entity =>
             {
                 entity.HasKey(e => e.HistoryId)
-                    .HasName("PK__answers__19BDBDD375531496");
+                    .HasName("PK__answers__19BDBDD37771BA09");
 
                 entity.ToTable("answers");
 
@@ -62,13 +62,13 @@ namespace CyberAgentAPI.Models
                     .WithMany(p => p.Answers)
                     .HasForeignKey(d => d.SurveyQuestionId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__answers__surveyQ__5812160E");
+                    .HasConstraintName("FK__answers__surveyQ__74AE54BC");
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.Answers)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__answers__userId__59063A47");
+                    .HasConstraintName("FK__answers__userId__75A278F5");
             });
 
             modelBuilder.Entity<Question>(entity =>
@@ -149,13 +149,13 @@ namespace CyberAgentAPI.Models
                     .WithMany(p => p.SurveyQuestions)
                     .HasForeignKey(d => d.QuestionId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__survey_qu__quest__5441852A");
+                    .HasConstraintName("FK__survey_qu__quest__70DDC3D8");
 
                 entity.HasOne(d => d.Survey)
                     .WithMany(p => p.SurveyQuestions)
                     .HasForeignKey(d => d.SurveyId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__survey_qu__surve__5535A963");
+                    .HasConstraintName("FK__survey_qu__surve__71D1E811");
             });
 
             modelBuilder.Entity<User>(entity =>
@@ -173,10 +173,14 @@ namespace CyberAgentAPI.Models
                 entity.Property(e => e.IsAdmin).HasColumnName("isAdmin");
 
                 entity.Property(e => e.Password)
-                    .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false)
-                    .HasColumnName("password");
+                    .HasMaxLength(32)
+                    .HasColumnName("password")
+                    .IsFixedLength(true);
+
+                entity.Property(e => e.PasswordSalt)
+                    .HasMaxLength(32)
+                    .HasColumnName("passwordSalt")
+                    .IsFixedLength(true);
             });
 
             OnModelCreatingPartial(modelBuilder);
