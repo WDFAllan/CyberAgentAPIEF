@@ -9,7 +9,7 @@ namespace CyberAgentAPI.Models
     {
         public User()
         {
-            Answers = new HashSet<Answer>();
+            Answers = new HashSet<Answers>();
         }
 
         public int UserId { get; set; }
@@ -18,6 +18,6 @@ namespace CyberAgentAPI.Models
         public byte[] Password { get; set; }
         public byte[] PasswordSalt { get; set; }
 
-        public virtual ICollection<Answer> Answers { get; set; }
+        public virtual ICollection<Answers> Answers { get; set; }
     }
 }

@@ -9,7 +9,7 @@ namespace CyberAgentAPI.Models
     {
         public SurveyQuestion()
         {
-            Answers = new HashSet<Answer>();
+            Answers = new HashSet<Answers>();
         }
 
         public int SurveyQuestionId { get; set; }
@@ -19,6 +19,6 @@ namespace CyberAgentAPI.Models
 
         public virtual Question Question { get; set; }
         public virtual Survey Survey { get; set; }
-        public virtual ICollection<Answer> Answers { get; set; }
+        public virtual ICollection<Answers> Answers { get; set; }
     }
 }

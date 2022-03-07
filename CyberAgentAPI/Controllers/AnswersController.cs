@@ -16,7 +16,7 @@ namespace CyberAgentAPI.Controllers
     {
 
         private readonly CyberAgentContext _context;
-        public static Answer answer = new Answer();
+        public static Answers answer = new Answers();
 
         public AnswersController(CyberAgentContext context)
         {
@@ -25,16 +25,16 @@ namespace CyberAgentAPI.Controllers
 
         // GET: api/Answers
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Answer>>> GetAnswers()
+        public async Task<ActionResult<IEnumerable<Answers>>> GetAnswers()
         {
             return await _context.Answers.Include(q=>q.User).ToListAsync();
         }
 
         // GET: api/Answers/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Answer>> GetAnswer(int id)
+        public async Task<ActionResult<Answers>> GetAnswer(int id)
         {
-            var answer = await _context.Answers.Include(q => q.User).SingleOrDefaultAsync(i => i.HistoryId == id);
+            var answer = await _context.Answers.Include(q => q.User).SingleOrDefaultAsync(i => i.AnswerId == id);
 
             if (answer == null)
             {
@@ -45,7 +45,7 @@ namespace CyberAgentAPI.Controllers
         }
 
         [HttpGet("ByAnswer/{id}")]
-        public async Task<ActionResult<IEnumerable<Answer>>> GetAnswersByAnswer(int id)
+        public async Task<ActionResult<IEnumerable<Answers>>> GetAnswersByAnswer(int id)
         {
             var history = _context.Answers.Include(q=>q.User)
                                         .Where(q => q.SurveyQuestionId == id)
@@ -63,9 +63,9 @@ namespace CyberAgentAPI.Controllers
         // PUT: api/Answers/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutAnswer(int id, Answer answer)
+        public async Task<IActionResult> PutAnswer(int id, Answers answer)
         {
-            if (id != answer.HistoryId)
+            if (id != answer.AnswerId)
             {
                 return BadRequest();
             }
@@ -94,19 +94,19 @@ namespace CyberAgentAPI.Controllers
         // POST: api/Answers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Answer>> PostAnswer(DtoAnswer request)
+        public async Task<ActionResult<Answers>> PostAnswer(DtoAnswer request)
         {
 
             answer.SurveyQuestionId = request.SurveyQuestionId;
-            answer.Answer1 = request.Answer1;
+            answer.Answer = request.Answer1;
             answer.Date = DateTime.Now;
             answer.UserId = request.UserId;
-            answer.HistoryId = 0;
+            answer.AnswerId = 0;
 
             _context.Answers.Add(answer);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetAnswer", new { id = answer.HistoryId }, answer);
+            return CreatedAtAction("GetAnswer", new { id = answer.AnswerId }, answer);
         }
 
         // DELETE: api/Answers/5
@@ -127,7 +127,7 @@ namespace CyberAgentAPI.Controllers
 
         private bool AnswerExists(int id)
         {
-            return _context.Answers.Any(e => e.HistoryId == id);
+            return _context.Answers.Any(e => e.AnswerId == id);
         }
     }
 }
