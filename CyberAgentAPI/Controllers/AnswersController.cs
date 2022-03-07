@@ -27,14 +27,14 @@ namespace CyberAgentAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Answer>>> GetAnswers()
         {
-            return await _context.Answers.ToListAsync();
+            return await _context.Answers.Include(q=>q.User).ToListAsync();
         }
 
         // GET: api/Answers/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Answer>> GetAnswer(int id)
         {
-            var answer = await _context.Answers.FindAsync(id);
+            var answer = await _context.Answers.Include(q => q.User).SingleOrDefaultAsync(i => i.HistoryId == id);
 
             if (answer == null)
             {

@@ -91,7 +91,7 @@ namespace CyberAgentAPI.Models
                     .IsUnicode(false)
                     .HasColumnName("domain");
 
-                entity.Property(e => e.IsAnswered).HasColumnName("isAnswered");
+                
 
                 entity.Property(e => e.Language)
                     .IsRequired()
