@@ -108,7 +108,9 @@ namespace CyberAgentAPI.Controllers
         {
             List<Claim> claims = new List<Claim>()
             {
-                new Claim(ClaimTypes.Name, user.Email)
+                new Claim("email", user.Email),
+                new Claim("id", user.UserId.ToString())
+
             };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                 _configuration.GetSection("JWTSettings:Token").Value));

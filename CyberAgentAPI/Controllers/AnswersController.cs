@@ -101,6 +101,7 @@ namespace CyberAgentAPI.Controllers
             answer.Answer1 = request.Answer1;
             answer.Date = DateTime.Now;
             answer.UserId = request.UserId;
+            answer.HistoryId = 0;
 
             _context.Answers.Add(answer);
             await _context.SaveChangesAsync();
