@@ -47,7 +47,7 @@ namespace CyberAgentAPI.Controllers
 
             var surveyQuestion = _context.SurveyQuestions
                                                 .Include(q => q.Question)
-                                                .Include(q => q.Answers)
+                                                .Include(q => q.Answers).ThenInclude(a => a.User)
                                                 .Where(q => q.SurveyId == id).ToList();
                                                 
 

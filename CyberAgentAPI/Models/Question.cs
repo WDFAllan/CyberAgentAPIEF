@@ -21,7 +21,6 @@ namespace CyberAgentAPI.Models
         public bool Small { get; set; }
         public bool Medium { get; set; }
         public bool Big { get; set; }
-        public bool IsAnswered { get; set; }
 
         public virtual ICollection<SurveyQuestion> SurveyQuestions { get; set; }
     }
