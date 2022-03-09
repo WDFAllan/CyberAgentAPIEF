@@ -37,7 +37,6 @@ namespace CyberAgentAPI.Models
 
             modelBuilder.Entity<Answers>(entity =>
             {
-
                 entity.HasKey("AnswerId");
 
                 entity.ToTable("answers");
@@ -84,11 +83,23 @@ namespace CyberAgentAPI.Models
 
                 entity.Property(e => e.Big).HasColumnName("big");
 
+                entity.Property(e => e.Category)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
+                    .HasColumnName("category");
+
                 entity.Property(e => e.Domain)
                     .IsRequired()
                     .HasMaxLength(20)
                     .IsUnicode(false)
                     .HasColumnName("domain");
+
+                entity.Property(e => e.KeyWord)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
+                    .HasColumnName("keyWord");
 
                 entity.Property(e => e.Language)
                     .IsRequired()
@@ -105,6 +116,12 @@ namespace CyberAgentAPI.Models
                     .HasColumnName("questionText");
 
                 entity.Property(e => e.Small).HasColumnName("small");
+
+                entity.Property(e => e.SubCategory)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
+                    .HasColumnName("subCategory");
 
                 entity.Property(e => e.Type)
                     .IsRequired()

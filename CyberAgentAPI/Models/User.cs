@@ -7,6 +7,10 @@ namespace CyberAgentAPI.Models
 {
     public partial class User
     {
+        public User()
+        {
+            Answers = new HashSet<Answers>();
+        }
 
         public int UserId { get; set; }
         public bool IsAdmin { get; set; }
@@ -14,5 +18,6 @@ namespace CyberAgentAPI.Models
         public byte[] Password { get; set; }
         public byte[] PasswordSalt { get; set; }
 
+        public virtual ICollection<Answers> Answers { get; set; }
     }
 }
