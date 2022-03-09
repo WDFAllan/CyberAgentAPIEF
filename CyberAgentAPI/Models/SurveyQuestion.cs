@@ -9,16 +9,15 @@ namespace CyberAgentAPI.Models
     {
         public SurveyQuestion()
         {
-            Answers = new HashSet<Answer>();
+            Answers = new HashSet<Answers>();
         }
 
         public int SurveyQuestionId { get; set; }
         public int QuestionId { get; set; }
         public int SurveyId { get; set; }
-        public string Answer { get; set; }
 
         public virtual Question Question { get; set; }
         public virtual Survey Survey { get; set; }
-        public virtual ICollection<Answer> Answers { get; set; }
+        public virtual ICollection<Answers> Answers { get; set; }
     }
 }

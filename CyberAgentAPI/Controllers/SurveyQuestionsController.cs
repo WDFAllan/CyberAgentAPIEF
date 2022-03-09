@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CyberAgentAPI.Models;
+using CyberAgentAPI.Models.dtos;
 
 namespace CyberAgentAPI.Controllers
 {
@@ -45,11 +46,13 @@ namespace CyberAgentAPI.Controllers
         public async Task<ActionResult<IEnumerable<SurveyQuestion>>> GetQuestionBySurvey(int id)
         {
 
-            var surveyQuestion = _context.SurveyQuestions
+
+            var surveyQuestion = _context.SurveyQuestions.Where(q => q.SurveyId == id)
                                                 .Include(q => q.Question)
                                                 .Include(q => q.Answers).ThenInclude(a => a.User)
-                                                .Where(q => q.SurveyId == id).ToList();
+                                                .ToList();
                                                 
+            
 
             if (surveyQuestion == null)
             {

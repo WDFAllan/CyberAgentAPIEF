@@ -17,7 +17,7 @@ namespace CyberAgentAPI.Models
         {
         }
 
-        public virtual DbSet<Answer> Answers { get; set; }
+        public virtual DbSet<Answers> Answers { get; set; }
         public virtual DbSet<Question> Questions { get; set; }
         public virtual DbSet<Survey> Surveys { get; set; }
         public virtual DbSet<SurveyQuestion> SurveyQuestions { get; set; }
@@ -35,16 +35,13 @@ namespace CyberAgentAPI.Models
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
 
-            modelBuilder.Entity<Answer>(entity =>
+            modelBuilder.Entity<Answers>(entity =>
             {
-                entity.HasKey(e => e.HistoryId)
-                    .HasName("PK__answers__19BDBDD37771BA09");
+                entity.HasKey("AnswerId");
 
                 entity.ToTable("answers");
 
-                entity.Property(e => e.HistoryId).HasColumnName("historyId");
-
-                entity.Property(e => e.Answer1)
+                entity.Property(e => e.Answer)
                     .IsRequired()
                     .HasMaxLength(100)
                     .IsUnicode(false)
@@ -58,17 +55,18 @@ namespace CyberAgentAPI.Models
 
                 entity.Property(e => e.UserId).HasColumnName("userId");
 
-                entity.HasOne(d => d.SurveyQuestion)
-                    .WithMany(p => p.Answers)
-                    .HasForeignKey(d => d.SurveyQuestionId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__answers__surveyQ__74AE54BC");
+                //entity.HasOne(d => d.SurveyQuestion)
+                //    .WithMany(p => p.Answers)
+                //    .HasForeignKey(d => d.SurveyQuestionId)
+                //    .OnDelete(DeleteBehavior.ClientSetNull)
+                //    .HasConstraintName("FK__answers__surveyQ__74AE54BC");
 
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.Answers)
-                    .HasForeignKey(d => d.UserId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__answers__userId__75A278F5");
+                //entity.HasOne(d => d.User)
+                //    .WithMany(p => p.Answers)
+                //    .HasForeignKey(d => d.UserId)
+                //    .OnDelete(DeleteBehavior.ClientSetNull)
+                //    .HasConstraintName("FK__answers__userId__75A278F5");
+
             });
 
             modelBuilder.Entity<Question>(entity =>
@@ -85,13 +83,23 @@ namespace CyberAgentAPI.Models
 
                 entity.Property(e => e.Big).HasColumnName("big");
 
+                entity.Property(e => e.Category)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
+                    .HasColumnName("category");
+
                 entity.Property(e => e.Domain)
                     .IsRequired()
                     .HasMaxLength(20)
                     .IsUnicode(false)
                     .HasColumnName("domain");
 
-                
+                entity.Property(e => e.KeyWord)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
+                    .HasColumnName("keyWord");
 
                 entity.Property(e => e.Language)
                     .IsRequired()
@@ -108,6 +116,12 @@ namespace CyberAgentAPI.Models
                     .HasColumnName("questionText");
 
                 entity.Property(e => e.Small).HasColumnName("small");
+
+                entity.Property(e => e.SubCategory)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
+                    .HasColumnName("subCategory");
 
                 entity.Property(e => e.Type)
                     .IsRequired()
@@ -134,12 +148,6 @@ namespace CyberAgentAPI.Models
                 entity.ToTable("survey_question");
 
                 entity.Property(e => e.SurveyQuestionId).HasColumnName("surveyQuestionId");
-
-                entity.Property(e => e.Answer)
-                    .IsRequired()
-                    .HasMaxLength(100)
-                    .IsUnicode(false)
-                    .HasColumnName("answer");
 
                 entity.Property(e => e.QuestionId).HasColumnName("questionId");
 
@@ -178,7 +186,7 @@ namespace CyberAgentAPI.Models
                     .IsFixedLength(true);
 
                 entity.Property(e => e.PasswordSalt)
-                    .HasMaxLength(32)
+                    .HasMaxLength(64)
                     .HasColumnName("passwordSalt")
                     .IsFixedLength(true);
             });

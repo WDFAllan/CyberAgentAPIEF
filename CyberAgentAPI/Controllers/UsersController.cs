@@ -77,7 +77,7 @@ namespace CyberAgentAPI.Controllers
         }
 
         [HttpPost("Login")]
-        public async Task<ActionResult<string>> Login(DtoUser request)
+        public async Task<ActionResult<string>> Login(DtoLoginUser request)
         {
             var user = await _context.Users
                    .Where(user => user.Email == request.Email)
@@ -162,7 +162,7 @@ namespace CyberAgentAPI.Controllers
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(DtoUser request)
+        public async Task<ActionResult<User>> PostUser(DtoLoginUser request)
         {
 
             CreatePasswordHash(request.Password, out byte[] password, out byte[] passwordSalt);
