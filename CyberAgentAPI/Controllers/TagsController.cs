@@ -11,48 +11,47 @@ namespace CyberAgentAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class QuestionsController : ControllerBase
+    public class TagsController : ControllerBase
     {
         private readonly CyberAgentContext _context;
 
-        public QuestionsController(CyberAgentContext context)
+        public TagsController(CyberAgentContext context)
         {
             _context = context;
         }
 
-        // GET: api/Questions
+        // GET: api/Tags
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Question>>> GetQuestions()
+        public async Task<ActionResult<IEnumerable<Tag>>> GetTags()
         {
-            return await _context.Questions.Include(q=>q.QuestionCategory).Include(q=>q.Tags).OrderBy(q=>q.QuestionCategory).ToListAsync();
+            return await _context.Tags.ToListAsync();
         }
 
-        // GET: api/Questions/5
+        // GET: api/Tags/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Question>> GetQuestion(int id)
+        public async Task<ActionResult<Tag>> GetTag(int id)
         {
-            var question = await _context.Questions.FindAsync(id);
+            var tag = await _context.Tags.FindAsync(id);
 
-            if (question == null)
+            if (tag == null)
             {
                 return NotFound();
             }
 
-            return question;
+            return tag;
         }
 
-
-        // PUT: api/Questions/5
+        // PUT: api/Tags/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutQuestion(int id, Question question)
+        public async Task<IActionResult> PutTag(int id, Tag tag)
         {
-            if (id != question.QuestionId)
+            if (id != tag.TagId)
             {
                 return BadRequest();
             }
 
-            _context.Entry(question).State = EntityState.Modified;
+            _context.Entry(tag).State = EntityState.Modified;
 
             try
             {
@@ -60,7 +59,7 @@ namespace CyberAgentAPI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!QuestionExists(id))
+                if (!TagExists(id))
                 {
                     return NotFound();
                 }
@@ -73,36 +72,36 @@ namespace CyberAgentAPI.Controllers
             return NoContent();
         }
 
-        // POST: api/Questions
+        // POST: api/Tags
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Question>> PostQuestion(Question question)
+        public async Task<ActionResult<Tag>> PostTag(Tag tag)
         {
-            _context.Questions.Add(question);
+            _context.Tags.Add(tag);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetQuestion", new { id = question.QuestionId }, question);
+            return CreatedAtAction("GetTag", new { id = tag.TagId }, tag);
         }
 
-        // DELETE: api/Questions/5
+        // DELETE: api/Tags/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteQuestion(int id)
+        public async Task<IActionResult> DeleteTag(int id)
         {
-            var question = await _context.Questions.FindAsync(id);
-            if (question == null)
+            var tag = await _context.Tags.FindAsync(id);
+            if (tag == null)
             {
                 return NotFound();
             }
 
-            _context.Questions.Remove(question);
+            _context.Tags.Remove(tag);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool QuestionExists(int id)
+        private bool TagExists(int id)
         {
-            return _context.Questions.Any(e => e.QuestionId == id);
+            return _context.Tags.Any(e => e.TagId == id);
         }
     }
 }

@@ -50,6 +50,7 @@ namespace CyberAgentAPI.Controllers
             var surveyQuestion = _context.SurveyQuestions.Where(q => q.SurveyId == id)
                                                 .Include(q => q.Question)
                                                 .Include(q => q.Answers).ThenInclude(a => a.User)
+                                                .OrderBy(q=>q.Question.QuestionCategory)
                                                 .ToList();
                                                 
             

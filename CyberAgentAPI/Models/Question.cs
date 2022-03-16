@@ -10,6 +10,7 @@ namespace CyberAgentAPI.Models
         public Question()
         {
             SurveyQuestions = new HashSet<SurveyQuestion>();
+            Tags = new HashSet<Tag>();
         }
 
         public int QuestionId { get; set; }
@@ -21,10 +22,11 @@ namespace CyberAgentAPI.Models
         public bool Small { get; set; }
         public bool Medium { get; set; }
         public bool Big { get; set; }
-        public string Category { get; set; }
-        public string SubCategory { get; set; }
         public string KeyWord { get; set; }
+        public int QuestionCategoryId { get; set; }
 
+        public virtual QuestionCategory QuestionCategory { get; set; }
         public virtual ICollection<SurveyQuestion> SurveyQuestions { get; set; }
+        public virtual ICollection<Tag> Tags { get; set; }
     }
 }
