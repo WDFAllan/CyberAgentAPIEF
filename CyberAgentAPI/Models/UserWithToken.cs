@@ -10,7 +10,7 @@
             this.UserId = user.UserId;
             this.Email=user.Email;
             this.IsAdmin = user.IsAdmin;
-            this.Password=user.Password;
+            
              
         }
     }

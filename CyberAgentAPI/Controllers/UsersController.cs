@@ -1,20 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CyberAgentAPI.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Options;
-using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Text;
-using CyberAgentAPI.Models.dtos;
-using Microsoft.Extensions.Configuration;
+using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using CyberAgentAPI.Models;
+using CyberAgentAPI.Models.dtos;
+using CyberAgentAPI.Properties;
+
+
+
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace CyberAgentAPI.Controllers
 {
@@ -22,203 +27,101 @@ namespace CyberAgentAPI.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly CyberAgentContext _context;
-        private readonly IConfiguration _configuration;
-        public static User user = new User();
+        private readonly JwtBearerTokenSettings jwtBearerTokenSettings;
+        private readonly UserManager<IdentityUser> userManager;
 
-        public UsersController(CyberAgentContext context,IConfiguration configuration)
+        public UsersController(IOptions<JwtBearerTokenSettings> jwtTokenOptions, UserManager<IdentityUser> userManager)
         {
-            _context = context;
-            _configuration = configuration; 
+            this.jwtBearerTokenSettings = jwtTokenOptions.Value;
+            this.userManager = userManager;
         }
-
-       
-
-        // GET: api/Users
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
-        {
-            return await _context.Users.ToListAsync();
-        }
-
-        // GET: api/Users/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
-        {
-            var user = await _context.Users.FindAsync(id);
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            return user;
-        }
-
-        // GET: api/Users/5
-        [HttpGet("GetUser")]
-        public async Task<ActionResult<User>> GetUser()
-        {
-
-            string emailAddress = HttpContext.User.Identity.Name;
-
-            var user = await _context.Users
-                   .Where(user => user.Email == emailAddress)
-                   .FirstOrDefaultAsync();
-
-            user.Password = null;
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            return user;
-        }
-
-        [HttpPost("Login")]
-        public async Task<ActionResult<string>> Login(DtoLoginUser request)
-        {
-            var user = await _context.Users
-                   .Where(user => user.Email == request.Email)
-                   .FirstOrDefaultAsync();
-
-            if(user == null)
-            {
-                return BadRequest("user not found");
-            }
-
-            if (request.Email != user.Email)
-            {
-                return BadRequest("request null");
-            }
-
-            if (!VerifyPasswordHash(request.Password, user.Password,user.PasswordSalt))
-            {
-                return BadRequest("Wrong password!");
-            }
-
-
-            string token = CreateToken(user);
-            return Ok(token);
-
-        }
-
-        private string CreateToken(User user)
-        {
-            List<Claim> claims = new List<Claim>()
-            {
-                new Claim("email", user.Email),
-                new Claim("id", user.UserId.ToString())
-
-            };
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                _configuration.GetSection("JWTSettings:Token").Value));
-
-            var creds = new SigningCredentials(key,SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                claims : claims,
-                expires: DateTime.Now.AddMonths(3),
-                 signingCredentials : creds);
-
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return jwt;
-        }
-
-
-    // PUT: api/Users/5
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-    [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, User user)
-        {
-            if (id != user.UserId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(user).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Users
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(DtoLoginUser request)
+        [Route("Register")]
+        public async Task<IActionResult> Register([FromBody] DtoUserCredentials user)
         {
-
-            CreatePasswordHash(request.Password, out byte[] password, out byte[] passwordSalt);
-
-            user.Email = request.Email;
-            user.Password = password;
-            user.PasswordSalt = passwordSalt;
-            user.UserId = 0;
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetUser", new { id = user.UserId }, user);
-
-            //return Ok(user);
-
-        }
-
-        // DELETE: api/Users/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
-        {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
+            if (!ModelState.IsValid || user == null)
             {
-                return NotFound();
+                return new BadRequestObjectResult(new { Message = "User Registration Failed" });
             }
 
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool UserExists(int id)
-        {
-            return _context.Users.Any(e => e.UserId == id);
-        }
-
-        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
-        {
-            using (var hmac = new HMACSHA256())
+            var identityUser = new IdentityUser() { UserName = user.Email};
+            var result = await userManager.CreateAsync(identityUser, user.Password);
+            if (!result.Succeeded)
             {
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+                var dictionary = new ModelStateDictionary();
+                foreach (IdentityError error in result.Errors)
+                {
+                    dictionary.AddModelError(error.Code, error.Description);
+                }
+
+                return new BadRequestObjectResult(new { Message = "User Registration Failed", Errors = dictionary });
             }
 
+            return Ok(new { Message = "User Reigstration Successful" });
         }
 
-        private bool VerifyPasswordHash(string password,byte[] passwordHash, byte[] passwordSalt)
+        [HttpPost]
+        [Route("Login")]
+        public async Task<IActionResult> Login([FromBody] DtoUserCredentials credentials)
         {
-            using(var hmac = new HMACSHA256(passwordSalt))
+            IdentityUser identityUser;
+
+            if (!ModelState.IsValid
+                || credentials == null
+                || (identityUser = await ValidateUser(credentials)) == null)
             {
-                var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return computedHash.SequenceEqual(passwordHash);
+                return new BadRequestObjectResult(new { Message = "Login failed" });
             }
+
+            var token = GenerateToken(identityUser);
+            return Ok(new { Token = token, Message = "Success" });
         }
 
+        //[HttpPost]
+        //[Route("Logout")]
+        //public async Task<IActionResult> Logout()
+        //{
+        //    // Well, What do you want to do here ?
+        //    // Wait for token to get expired OR 
+        //    // Maintain token cache and invalidate the tokens after logout method is called
+        //    return Ok(new { Token = token, Message = "Logged Out" });
+        //}
+
+        private async Task<IdentityUser> ValidateUser(DtoUserCredentials credentials)
+        {
+            var identityUser = await userManager.FindByNameAsync(credentials.Email);
+            if (identityUser != null)
+            {
+                var result = userManager.PasswordHasher.VerifyHashedPassword(identityUser, identityUser.PasswordHash, credentials.Password);
+                return result == PasswordVerificationResult.Failed ? null : identityUser;
+            }
+
+            return null;
+        }
+
+
+        private object GenerateToken(IdentityUser identityUser)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(jwtBearerTokenSettings.SecretKey);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(ClaimTypes.Name, identityUser.UserName.ToString()),
+                    new Claim("Id", identityUser.Id)
+                }),
+
+                Expires = DateTime.UtcNow.AddSeconds(jwtBearerTokenSettings.ExpiryTimeInSeconds),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+                Audience = jwtBearerTokenSettings.Audience,
+                Issuer = jwtBearerTokenSettings.Issuer
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
     }
 }

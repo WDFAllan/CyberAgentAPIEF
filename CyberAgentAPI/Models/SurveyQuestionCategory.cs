@@ -17,5 +17,7 @@ namespace CyberAgentAPI.Models
         public int? Parent { get; set; }
 
         public virtual ICollection<SurveyQuestion> SurveyQuestions { get; set; }
+        public virtual SurveyQuestionCategory surveyQuestionCategory { get; set; }
+
     }
 }

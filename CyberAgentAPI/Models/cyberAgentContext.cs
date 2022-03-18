@@ -1,4 +1,6 @@
 ﻿using System;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
@@ -6,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace CyberAgentAPI.Models
 {
-    public partial class CyberAgentContext : DbContext
+    public partial class CyberAgentContext : IdentityDbContext<IdentityUser>
     {
         public CyberAgentContext()
         {
@@ -36,6 +38,9 @@ namespace CyberAgentAPI.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            base.OnModelCreating(modelBuilder);
+
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
 
             modelBuilder.Entity<Answers>(entity =>
@@ -67,11 +72,12 @@ namespace CyberAgentAPI.Models
                 //    .OnDelete(DeleteBehavior.ClientSetNull)
                 //    .HasConstraintName("FK__answers__surveyQ__3B0BC30C");
 
-                //entity.HasOne(d => d.User)
-                //    .WithMany(p => p.Answers)
-                //    .HasForeignKey(d => d.UserId)
-                //    .OnDelete(DeleteBehavior.ClientSetNull)
-                //    .HasConstraintName("FK__answers__userId__3BFFE745");
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.Answers)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__answers__userId__3BFFE745");
+
             });
 
             modelBuilder.Entity<Question>(entity =>
@@ -228,6 +234,8 @@ namespace CyberAgentAPI.Models
 
             modelBuilder.Entity<User>(entity =>
             {
+                entity.HasKey("UserId");
+
                 entity.ToTable("users");
 
                 entity.Property(e => e.UserId).HasColumnName("userId");
@@ -240,17 +248,6 @@ namespace CyberAgentAPI.Models
 
                 entity.Property(e => e.IsAdmin).HasColumnName("isAdmin");
 
-                entity.Property(e => e.Password)
-                    .IsRequired()
-                    .HasMaxLength(32)
-                    .HasColumnName("password")
-                    .IsFixedLength(true);
-
-                entity.Property(e => e.PasswordSalt)
-                    .IsRequired()
-                    .HasMaxLength(64)
-                    .HasColumnName("passwordSalt")
-                    .IsFixedLength(true);
             });
 
             OnModelCreatingPartial(modelBuilder);
