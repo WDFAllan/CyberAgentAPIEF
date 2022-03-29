@@ -24,8 +24,12 @@ namespace CyberAgentAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Question>>> GetQuestions()
         {
-            return await _context.Questions.Include(q=>q.QuestionCategory).Include(q=>q.Tags).OrderBy(q=>q.QuestionCategory).ToListAsync();
+            return await _context.Questions.Include(q => q.QuestionCategory).ThenInclude(q => q.Parent).ThenInclude(q=>q.InverseParent)
+                                            .Include(q => q.Tags)
+                                            .OrderBy(q => q.QuestionCategory)
+                                            .ToListAsync();
         }
+
 
         // GET: api/Questions/5
         [HttpGet("{id}")]
